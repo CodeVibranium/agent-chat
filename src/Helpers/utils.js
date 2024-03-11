@@ -1,3 +1,5 @@
+import { wss } from "../Config/socket.config";
+
 export function addMessage({
   message,
   sentBy = null,
@@ -45,8 +47,8 @@ export function addSelectedUser(message) {
   newElem.id = `active-selected-${message.userName}-${message.brand}`;
   addSpeakingWith(JSON.parse(newElem.data));
   newElem.onclick = (event) => {
-    console.log(" event.target.id", event.target.id);
-    console.log(" event.target.data", event.target.data);
+    console.log("event.target.id", event.target.id);
+    console.log("event.target.data", event.target.data);
     addSpeakingWith(JSON.parse(newElem.data));
 
     // if()
@@ -62,15 +64,16 @@ export function addWaitingUser(message) {
   let newElem = document.createElement("li");
   // here i will still have user data
   newElem.textContent = `${message.userName}`;
-  newElem.id = `waiting-${message.userName}-${message.brand}`;
+  newElem.id = `waiting-${message.userSocketId}-${message.userName}-${message.brand}`;
+  newElem.className = `ali-waiting-user`;
 
   // newElem.addEventListener("onclick", () => {
 
   // });
   newElem.onclick = () => {
-    console.log("first-->");
-    addSelectedUser(message);
-    addMessage({ message: message.message, sentBy: message.userName });
+    // console.log("first-->");
+    console.log("WSS", wss);
+    wss.selectedUser(message);
     newElem.remove();
   };
 

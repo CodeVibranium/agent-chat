@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-import { addMessage, addWaitingUser } from "../Helpers/utils";
+import { addMessage, addSelectedUser, addWaitingUser } from "../Helpers/utils";
 import * as superheroes from "superheroes";
 
 class CustomSocket {
@@ -42,6 +42,8 @@ class CustomSocket {
       this.socket.on("connect", () => {
         console.log("Connected to server", this.socket.id);
         addMessage({ ...message, socketId: this.socket.id });
+        this.removeWaitingUser();
+        this.initialWaitingUsersList();
         this.setupContinuousMessageReceiving();
         this.waitingUsers();
         callback();
@@ -107,9 +109,63 @@ class CustomSocket {
       // setState((prev) => [...prev, user]);
       addWaitingUser({
         ...user,
-        agentSocketId: this.socket.id,
-        agentName: this.agentName,
+        // agentSocketId: this.socket.id,
+        // agentName: this.agentName,
       });
+    });
+  }
+
+  removeWaitingUser() {
+    // responsible to add the waiting users
+    // responsible to removed the waiting users from list
+    // responsible to update the UI.
+    this.socket.on("remove-waiting-user", (users) => {
+      console.log("removeWaitingUser:users->remove-waiting-user", users);
+      // window.alert("REMOVE WAITING USERS: ", JSON.stringify(users));
+      // document.querySelectorAll(`.ali-waiting-user`).forEach((e) => e.remove());
+      // const waitingUserElem = document.getElementById(
+      //   `waiting-${users.removedUser.userSocketId}-${users.removedUser.userName}-${users.removedUser.brand}`
+      // );
+      const allWaitingUsers = document.querySelectorAll(`.ali-waiting-user`);
+      console.log("allWaitingUsers-->", allWaitingUsers);
+      allWaitingUsers.forEach(function (element) {
+        console.log("ELEMENT IS: ", element);
+        element.parentNode.removeChild(element);
+      });
+      users.map((user) => {
+        addWaitingUser(user);
+      });
+    });
+  }
+
+  selectedUser(message) {
+    message = {
+      ...message,
+      agentSocketId: this.socket.id,
+      agentName: this.agentName,
+    };
+    // console.log("");
+    // window.alert("TRIGGERED Agent selected user-->");
+    this.socket.emit("agent-selected-user", message, () => {
+      addSelectedUser(message);
+      addMessage({ message: message.message, sentBy: message.userName });
+    });
+  }
+
+  initialWaitingUsersList() {
+    this.socket.on("update-waiting-users", (users) => {
+      console.log("WAITING USERS--->", users);
+      users.map((user) => {
+        this.waiting_users.push(user);
+        addWaitingUser({
+          ...user,
+          // agentSocketId: this.socket.id,
+          // agentName: this.agentName,
+          // on click will call wss selected user method which will add the agent id
+        });
+        return 0;
+      });
+      // setState((prev) => [...prev, user]);
     });
   }
 
