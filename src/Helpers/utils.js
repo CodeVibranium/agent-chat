@@ -73,7 +73,7 @@ export function addWaitingUser(message) {
   newElem.onclick = () => {
     // console.log("first-->");
     console.log("WSS", wss);
-    wss.selectedUser(message);
+    // wss.selectedUser(message);
     newElem.remove();
   };
 

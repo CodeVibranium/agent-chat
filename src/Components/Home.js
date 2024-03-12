@@ -6,6 +6,7 @@ import Chat from "./Chat";
 function Home() {
   const [waitingUsers, setWaitingUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [activeUser, setActiveUser] = useState({});
 
   return (
     <div
@@ -24,10 +25,13 @@ function Home() {
         }}
       >
         <SelectedUsers
-          selectedUsers={waitingUsers}
+          activeUser={activeUser}
+          selectedUsers={selectedUsers}
+          setActiveUser={setActiveUser}
           setSelectedUsers={setSelectedUsers}
         />
         <WaitingUsers
+          setActiveUser={setActiveUser}
           waitingUsers={waitingUsers}
           setSelectedUsers={setSelectedUsers}
           setWaitingUsers={setWaitingUsers}
@@ -40,7 +44,7 @@ function Home() {
           border: "2px solid black",
         }}
       >
-        <Chat />
+        <Chat activeUser={activeUser} selectedUsers={selectedUsers} />
       </div>
     </div>
   );
