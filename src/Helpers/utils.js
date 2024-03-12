@@ -8,14 +8,13 @@ export function addMessage({
 }) {
   // Assuming you have a div with an id of 'myDiv'
   const myDiv = document.getElementById("connected-to");
-  console.log("myDiv", myDiv);
   let newElem;
   // Create a new paragraph element
   if (first) {
     newElem = document.createElement("h3");
     newElem.textContent = `You are connected to ${socketId}`;
   } else {
-    newElem = document.createElement("li");
+    newElem = document.createElement("p");
     // newElem.
     newElem.textContent = `${sentBy} says: ${message}`;
   }

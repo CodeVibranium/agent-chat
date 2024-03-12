@@ -94,7 +94,11 @@ class CustomSocket {
       } else {
         this.socket.emit(
           "send-message",
-          { ...message, agentSocketId: this.socket.id },
+          {
+            ...message,
+            agentSocketId: this.socket.id,
+            agentName: this.agentName,
+          },
           room
         );
         resolve(this.socket.id);
@@ -134,6 +138,10 @@ class CustomSocket {
       agentSocketId: this.id,
       agentName: this.agentName,
     };
+    addMessage({
+      message: message.message,
+      sentBy: message.userName,
+    });
     this.socket.emit("agent-selected-user", message, () => {});
   }
 
@@ -143,50 +151,35 @@ class CustomSocket {
     });
   }
 
-  receiveMsg() {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        reject("Socket not initialized");
-        return;
-      } else {
-        this.socket.on("receive-msg", (msgSentFromServer) => {
-          addMessage({
-            message: msgSentFromServer.message,
-            sentBy: msgSentFromServer.userName,
-          });
-          resolve(this.socket.id);
-        });
-      }
-      this.socket.on("connect_error", (error) => {
-        reject(error);
-      });
-    });
-  }
-
-  // closeSocket(activeUser) {
-  //   console.log(id, ";sljd");
-  //   if (this.socket) {
-  //     this.socket
-  //       .emit("stop", activeUser, () => {
-  //         console.log("Socket stopped");
-  //       })
-  //       .on("error", (error) => {
-  //         console.error("Socket emit error:", error);
+  // receiveMsg() {
+  //   return new Promise((resolve, reject) => {
+  //     if (!this.socket) {
+  //       reject("Socket not initialized");
+  //       return;
+  //     } else {
+  //       this.socket.on("receive-msg", (msgSentFromServer) => {
+  //         addMessage({
+  //           message: msgSentFromServer.message,
+  //           sentBy: msgSentFromServer.userName,
+  //         });
+  //         resolve(this.socket.id);
   //       });
-  //     this.disconnectSocket();
-  //   }
+  //     }
+  //     this.socket.on("connect_error", (error) => {
+  //       reject(error);
+  //     });
+  //   });
   // }
-
-  // need to disconnect user socket i
 
   logoutAgent(user) {
     // used for agent logout
     if (this.socket) {
       this.socket.disconnect();
-      // this.socket.emit("disconnect", user);
     }
   }
+
   closeUserSocket(handleSocketClosedByUser) {
+    // when user closes the connection from his side
     this.socket.on("forward-disconnect", (user) => {
       handleSocketClosedByUser(user);
     });
@@ -194,6 +187,7 @@ class CustomSocket {
 
   disconnectSocket(data, handleSocketClosedByUser) {
     if (this.socket) {
+      // when agent closes user connection
       this.socket.emit("end-connection", data, data.userSocketId);
       handleSocketClosedByUser(data);
     }

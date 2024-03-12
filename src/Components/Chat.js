@@ -8,7 +8,6 @@ function Chat({ activeUser, selectedUsers }) {
     status: false,
     socketId: null,
   });
-  const [userData, setUserData] = useState({});
   const [disconnectedUsers, setDisconnectedUsers] = useState({});
   const userName = useRef(null);
 
@@ -74,7 +73,7 @@ function Chat({ activeUser, selectedUsers }) {
 
   function handleAgentLogout(activeUser) {
     if (!(selectedUsers.length > 0 && Object.keys(activeUser).length > 0)) {
-      wss.disconnectSocket(activeUser);
+      wss.logoutAgent();
       // TODO:agent logout logic
     } else {
       alert("Please end all selected users chat & logout");
@@ -100,21 +99,30 @@ function Chat({ activeUser, selectedUsers }) {
         {/* TODO: if user has no active chats u can allow him to logout */}
       </div>
       {isSocketConnected && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "0 10px",
-          }}
-        >
-          <h3>client: {activeUser?.userName || "No one"}</h3>
-          <h3>Connected as: {loading.socketId || "Not connected"}</h3>
-        </div>
+        <>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "0 10px",
+            }}
+          >
+            <h3>client: {activeUser?.userName || "No one"}</h3>
+            <h3>Connected as: {loading.socketId || "Not connected"}</h3>
+          </div>
+          <div id="connected-to" style={{ textAlign: "left" }}></div>
+        </>
       )}
       {/* TODO: need to remove disconnected users from redis */}
       {disconnectedUsers?.[activeUser.userSocketId] ? (
         <>
-          <h4>{activeUser.userName} has disconnected</h4>
+          <h4>
+            {disconnectedUsers?.[activeUser.userSocketId].disconnectedBy ===
+            "user"
+              ? `User ${activeUser?.userName}`
+              : `Agent  ${wss.agentName} (you)`}
+            has ended the chat
+          </h4>
         </>
       ) : (
         <div
@@ -141,19 +149,21 @@ function Chat({ activeUser, selectedUsers }) {
           >
             Submit
           </button>
-          <button
-            style={{
-              minHeight: "100%",
-              padding: "10px",
-              marginLeft: "20px",
-              background: "#BA0021",
-            }}
-            onClick={() => {
-              wss.disconnectSocket(activeUser, handleSocketClosedByUser);
-            }}
-          >
-            End
-          </button>
+          {isSocketConnected && (
+            <button
+              style={{
+                minHeight: "100%",
+                padding: "10px",
+                marginLeft: "20px",
+                background: "#BA0021",
+              }}
+              onClick={() => {
+                wss.disconnectSocket(activeUser, handleSocketClosedByUser);
+              }}
+            >
+              End
+            </button>
+          )}
           <br />
           <br />
         </div>
